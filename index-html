@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Twibbon Hari Santri Nasional 2026</title>
+<style>
+  body {
+    font-family: system-ui, sans-serif;
+    background: #0e3b35;
+    color: #fff;
+    margin: 0;
+    padding: 20px 16px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+  }
+  h1 { font-size: 20px; text-align: center; margin: 0; color: #e8c97a; }
+  canvas {
+    width: 100%;
+    max-width: 480px;
+    height: auto;
+    border-radius: 12px;
+    background: #173f39;
+  }
+  .form {
+    width: 100%;
+    max-width: 480px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  input[type="text"] {
+    padding: 12px;
+    border-radius: 8px;
+    border: none;
+    font-size: 16px;
+  }
+  .btn {
+    background: #d4af5a;
+    color: #1b1b1b;
+    border: none;
+    padding: 12px;
+    border-radius: 8px;
+    font-weight: bold;
+    font-size: 16px;
+    cursor: pointer;
+    text-align: center;
+  }
+  .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+  input[type="file"] { font-size: 14px; }
+</style>
+</head>
+<body>
+
+<h1>Twibbon Hari Santri Nasional 2026</h1>
+
+<canvas id="canvas" width="1080" height="1080"></canvas>
+
+<div class="form">
+  <label>1. Pilih foto kamu
+    <input type="file" id="photoInput" accept="image/*">
+  </label>
+  <input type="text" id="nameInput" placeholder="2. Tulis nama kamu (opsional)" maxlength="30">
+  <button class="btn" id="downloadBtn" disabled>3. Unduh Twibbon</button>
+</div>
+
+<script>
+  const FRAME_SRC = 'twibbon_hari_santri_frame.png';
+  const BOX = { x: 540, y: 450, w: 470, h: 530, r: 40 };
+
+  const canvas = document.getElementById('canvas');
+  const ctx = canvas.getContext('2d');
+  const photoInput = document.getElementById('photoInput');
+  const nameInput = document.getElementById('nameInput');
+  const downloadBtn = document.getElementById('downloadBtn');
+
+  let photo = null;
+  let frame = new Image();
+  let frameReady = false;
+
+  frame.onload = () => { frameReady = true; downloadBtn.disabled = false; draw(); };
+  frame.onerror = () => alert('File bingkai twibbon_hari_santri_frame.png tidak ditemukan.');
+  frame.src = FRAME_SRC;
+
+  function roundRectPath(x, y, w, h, r) {
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.arcTo(x + w, y, x + w, y + h, r);
+    ctx.arcTo(x + w, y + h, x, y + h, r);
+    ctx.arcTo(x, y + h, x, y, r);
+    ctx.arcTo(x, y, x + w, y, r);
+    ctx.closePath();
+  }
+
+  function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    if (photo) {
+      ctx.save();
+      roundRectPath(BOX.x, BOX.y, BOX.w, BOX.h, BOX.r);
+      ctx.clip();
+      const scale = Math.max(BOX.w / photo.width, BOX.h / photo.height);
+      const dw = photo.width * scale;
+      const dh = photo.height * scale;
+      ctx.drawImage(photo, BOX.x + (BOX.w - dw) / 2, BOX.y + (BOX.h - dh) / 2, dw, dh);
+
+      const name = nameInput.value.trim();
+      if (name) {
+        const stripH = 100;
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.55)';
+        ctx.fillRect(BOX.x, BOX.y + BOX.h - stripH, BOX.w, stripH);
+        ctx.fillStyle = '#ffffff';
+        ctx.font = 'bold 44px system-ui, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(name, BOX.x + BOX.w / 2, BOX.y + BOX.h - stripH / 2, BOX.w - 40);
+      }
+      ctx.restore();
+    }
+
+    if (frameReady) ctx.drawImage(frame, 0, 0, canvas.width, canvas.height);
+  }
+
+  photoInput.addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const img = new Image();
+    img.onload = () => { photo = img; draw(); };
+    img.src = URL.createObjectURL(file);
+  });
+
+  nameInput.addEventListener('input', draw);
+
+  downloadBtn.addEventListener('click', () => {
+    if (!photo) {
+      alert('Pilih foto dulu ya.');
+      return;
+    }
+    const link = document.createElement('a');
+    link.download = 'twibbon-hari-santri.png';
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+  });
+
+  draw();
+</script>
+</body>
+</html>
