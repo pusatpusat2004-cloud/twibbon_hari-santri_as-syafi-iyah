@@ -106,16 +106,25 @@
       const dh = photo.height * scale;
       ctx.drawImage(photo, BOX.x + (BOX.w - dw) / 2, BOX.y + (BOX.h - dh) / 2, dw, dh);
 
-      const name = nameInput.value.trim();
+            const name = nameInput.value.trim();
       if (name) {
-        const stripH = 100;
-        ctx.fillStyle = 'rgba(0, 0, 0, 0.55)';
-        ctx.fillRect(BOX.x, BOX.y + BOX.h - stripH, BOX.w, stripH);
-        ctx.fillStyle = '#ffffff';
-        ctx.font = 'bold 44px system-ui, sans-serif';
+        const plateH = 110;
+        const plateW = BOX.w - 60;
+        const plateX = BOX.x + 30;
+        const plateY = BOX.y + BOX.h - plateH - 30;
+
+        // Papan nama emas
+        ctx.fillStyle = '#d4af5a';
+        roundRectPath(plateX, plateY, plateW, plateH, 24);
+        ctx.fill();
+
+        // Tulisan nama
+        ctx.fillStyle = '#0e3b35';
+        ctx.font = 'bold 46px system-ui, sans-serif';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
-        ctx.fillText(name, BOX.x + BOX.w / 2, BOX.y + BOX.h - stripH / 2, BOX.w - 40);
+        ctx.fillText(name, BOX.x + BOX.w / 2, plateY + plateH / 2, plateW - 40);
+      }
       }
       ctx.restore();
     }
