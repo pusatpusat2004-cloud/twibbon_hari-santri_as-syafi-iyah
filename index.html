@@ -68,7 +68,7 @@
 
 <script>
   const FRAME_SRC = 'twibbon_hari_santri_frame.png';
-  const BOX = { x: 548, y: 458, w: 455, h: 515, r: 30 };
+  const BOX = { x: 440, y: 360, w: 640, h: 720, r: 0 };
 
   const canvas = document.getElementById('canvas');
   const ctx = canvas.getContext('2d');
@@ -112,9 +112,9 @@
       const name = nameInput.value.trim();
       if (name) {
         const plateH = 110;
-        const plateW = BOX.w - 60;
-        const plateX = BOX.x + 30;
-        const plateY = BOX.y + BOX.h - plateH - 30;
+        const plateW = 520;
+        const plateX = 480;
+        const plateY = 800;
 
         ctx.fillStyle = '#d4af5a';
         roundRectPath(plateX, plateY, plateW, plateH, 24);
