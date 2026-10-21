@@ -75,7 +75,7 @@
 
 <script>
   const FRAME_SRC = 'twibbon_hari_santri_frame.png';
-  // Area foto: lengkungan langit sampai bawah bingkai
+  // Area foto: lengkungan langit sampai bagian bawah bingkai
   const BOX = { x: 440, y: 360, w: 640, h: 720 };
 
   const canvas = document.getElementById('canvas');
@@ -89,7 +89,6 @@
   let frame = new Image();
   let frameReady = false;
 
-  // posisi dan besar foto (diatur pengguna)
   let offsetX = 0;
   let offsetY = 0;
   let zoom = 1;
@@ -130,6 +129,56 @@
     offsetY = Math.min(maxY, Math.max(-maxY, offsetY));
   }
 
+  // Papan nama emas dengan bingkai ganda dan hiasan bintang
+  function drawNamePlate(name) {
+    const x = 545, y = 600, w = 480, h = 100, r = 22;
+
+    // Latar emas dengan gradasi
+    const g = ctx.createLinearGradient(x, y, x, y + h);
+    g.addColorStop(0, '#f1d98a');
+    g.addColorStop(0.5, '#d4af5a');
+    g.addColorStop(1, '#b8913f');
+    ctx.fillStyle = g;
+    roundRectPath(x, y, w, h, r);
+    ctx.fill();
+
+    // Bingkai luar tebal
+    ctx.strokeStyle = '#8a6a25';
+    ctx.lineWidth = 6;
+    roundRectPath(x, y, w, h, r);
+    ctx.stroke();
+
+    // Bingkai dalam tipis
+    ctx.strokeStyle = '#fff3c4';
+    ctx.lineWidth = 2;
+    roundRectPath(x + 10, y + 10, w - 20, h - 20, r - 6);
+    ctx.stroke();
+
+    // Hiasan bintang di kiri dan kanan
+    function star(cx, cy, s) {
+      ctx.beginPath();
+      for (let i = 0; i < 8; i++) {
+        const ang = (Math.PI / 4) * i;
+        const rad = i % 2 === 0 ? s : s * 0.4;
+        const px = cx + Math.cos(ang) * rad;
+        const py = cy + Math.sin(ang) * rad;
+        i === 0 ? ctx.moveTo(px, py) : ctx.lineTo(px, py);
+      }
+      ctx.closePath();
+      ctx.fillStyle = '#8a6a25';
+      ctx.fill();
+    }
+    star(x + 34, y + h / 2, 12);
+    star(x + w - 34, y + h / 2, 12);
+
+    // Tulisan nama
+    ctx.fillStyle = '#0e3b35';
+    ctx.font = 'bold 46px system-ui, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(name, x + w / 2, y + h / 2 + 2, w - 110);
+  }
+
   function draw() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
@@ -148,22 +197,7 @@
       ctx.restore();
 
       const name = nameInput.value.trim();
-      if (name) {
-        const plateH = 100;
-        const plateW = 480;
-        const plateX = 545;
-        const plateY = 610;
-
-        ctx.fillStyle = '#d4af5a';
-        roundRectPath(plateX, plateY, plateW, plateH, 24);
-        ctx.fill();
-
-        ctx.fillStyle = '#0e3b35';
-        ctx.font = 'bold 46px system-ui, sans-serif';
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillText(name, plateX + plateW / 2, plateY + plateH / 2, plateW - 40);
-      }
+      if (name) drawNamePlate(name);
     }
 
     if (frameReady) ctx.drawImage(frame, 0, 0, canvas.width, canvas.height);
@@ -204,7 +238,7 @@
   canvas.addEventListener('mousemove', moveDrag);
   window.addEventListener('mouseup', endDrag);
   canvas.addEventListener('touchstart', startDrag, { passive: true });
-  canvas.addEventListener('touchmove', (e) => { moveDrag(e); }, { passive: true });
+  canvas.addEventListener('touchmove', moveDrag, { passive: true });
   canvas.addEventListener('touchend', endDrag);
 
   zoomInput.addEventListener('input', () => {
