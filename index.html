@@ -68,7 +68,7 @@
 
 <script>
   const FRAME_SRC = 'twibbon_hari_santri_frame.png';
-  const BOX = { x: 440, y: 360, w: 640, h: 720, r: 0 };
+  const BOX = { x: 440, y: 360, w: 640, h: 720 };
 
   const canvas = document.getElementById('canvas');
   const ctx = canvas.getContext('2d');
@@ -94,21 +94,30 @@
     ctx.closePath();
   }
 
+  // Bentuk area foto mengikuti lengkungan langit di bingkai
+  function archPath() {
+    ctx.beginPath();
+    ctx.moveTo(830, 365);
+    ctx.bezierCurveTo(560, 365, 440, 520, 440, 720);
+    ctx.lineTo(440, 1080);
+    ctx.lineTo(1080, 1080);
+    ctx.lineTo(1080, 365);
+    ctx.closePath();
+  }
+
   function draw() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     if (photo) {
       ctx.save();
-      archPath();(BOX.x, BOX.y, BOX.w, BOX.h, BOX.r);
+      archPath();
       ctx.clip();
       const scale = Math.max(BOX.w / photo.width, BOX.h / photo.height);
       const dw = photo.width * scale;
       const dh = photo.height * scale;
       ctx.drawImage(photo, BOX.x + (BOX.w - dw) / 2, BOX.y + (BOX.h - dh) / 2, dw, dh);
       ctx.restore();
-    }
 
-    if (photo) {
       const name = nameInput.value.trim();
       if (name) {
         const plateH = 110;
@@ -120,7 +129,12 @@
         roundRectPath(plateX, plateY, plateW, plateH, 24);
         ctx.fill();
 
-        
+        ctx.fillStyle = '#0e3b35';
+        ctx.font = 'bold 46px system-ui, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(name, plateX + plateW / 2, plateY + plateH / 2, plateW - 40);
+      }
     }
 
     if (frameReady) ctx.drawImage(frame, 0, 0, canvas.width, canvas.height);
