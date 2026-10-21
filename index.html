@@ -74,7 +74,7 @@
 </div>
 
 <script>
-  const FRAME_SRC = 'twibbon_hari_santri_frame.png';
+  const FRAME_SRC = 'twibbon_hari_santri_frame.png?v=2';
   // Area foto: lengkungan merah/langit sampai bagian bawah bingkai
   const BOX = { x: 440, y: 360, w: 640, h: 720 };
 
@@ -102,3 +102,158 @@
     ctx.moveTo(x + r, y);
     ctx.arcTo(x + w, y, x + w, y + h, r);
     ctx.arcTo(x + w, y + h, x, y + h, r);
+    ctx.arcTo(x, y + h, x, y, r);
+    ctx.arcTo(x, y, x + w, y, r);
+    ctx.closePath();
+  }
+
+  // Bentuk area foto mengikuti lengkungan di bingkai
+  function archPath() {
+    ctx.beginPath();
+    ctx.moveTo(830, 365);
+    ctx.bezierCurveTo(560, 365, 442, 520, 442, 720);
+    ctx.lineTo(442, 1080);
+    ctx.lineTo(1080, 1080);
+    ctx.lineTo(1080, 365);
+    ctx.closePath();
+  }
+
+  // Ukuran awal: foto tampil utuh di dalam area foto
+  function baseScale() {
+    return Math.min(BOX.w / photo.width, BOX.h / photo.height);
+  }
+
+  function clampOffsets(dw, dh) {
+    const maxX = Math.max(0, (dw - BOX.w) / 2);
+    const maxY = Math.max(0, (dh - BOX.h) / 2);
+    offsetX = Math.min(maxX, Math.max(-maxX, offsetX));
+    offsetY = Math.min(maxY, Math.max(-maxY, offsetY));
+  }
+
+  // Papan nama kuning dengan bingkai hijau di bagian bawah foto
+  function drawNamePlate(name) {
+    const x = 575, y = 992, w = 430, h = 80, r = 14;
+
+    ctx.fillStyle = '#ffc825';
+    roundRectPath(x, y, w, h, r);
+    ctx.fill();
+
+    ctx.strokeStyle = '#1fa64a';
+    ctx.lineWidth = 8;
+    roundRectPath(x, y, w, h, r);
+    ctx.stroke();
+
+    ctx.strokeStyle = '#1fa64a';
+    ctx.lineWidth = 2;
+    roundRectPath(x + 12, y + 12, w - 24, h - 24, r - 4);
+    ctx.stroke();
+
+    ctx.fillStyle = '#0e5a2a';
+    ctx.font = 'bold 40px system-ui, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(name, x + w / 2, y + h / 2 + 2, w - 60);
+  }
+
+  function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    if (photo) {
+      const scale = baseScale() * zoom;
+      const dw = photo.width * scale;
+      const dh = photo.height * scale;
+      clampOffsets(dw, dh);
+
+      ctx.save();
+      archPath();
+      ctx.clip();
+      // Isi area kosong dengan warna hijau supaya tidak bolong saat foto diperkecil
+      ctx.fillStyle = '#1f5f55';
+      ctx.fillRect(BOX.x, BOX.y, BOX.w, BOX.h);
+      const cx = BOX.x + BOX.w / 2 + offsetX;
+      const cy = BOX.y + BOX.h / 2 + offsetY;
+      ctx.drawImage(photo, cx - dw / 2, cy - dh / 2, dw, dh);
+      ctx.restore();
+
+      const name = nameInput.value.trim();
+      if (name) drawNamePlate(name);
+    }
+
+    if (frameReady) ctx.drawImage(frame, 0, 0, canvas.width, canvas.height);
+  }
+
+  // Geser foto dengan mouse atau sentuhan
+  let dragging = false;
+  let lastX = 0, lastY = 0;
+
+  function toCanvasPoint(e) {
+    const rect = canvas.getBoundingClientRect();
+    const p = e.touches ? e.touches[0] : e;
+    return {
+      x: (p.clientX - rect.left) * (canvas.width / rect.width),
+      y: (p.clientY - rect.top) * (canvas.height / rect.height)
+    };
+  }
+
+  function startDrag(e) {
+    if (!photo) return;
+    dragging = true;
+    const p = toCanvasPoint(e);
+    lastX = p.x; lastY = p.y;
+  }
+
+  function moveDrag(e) {
+    if (!dragging || !photo) return;
+    const p = toCanvasPoint(e);
+    offsetX += p.x - lastX;
+    offsetY += p.y - lastY;
+    lastX = p.x; lastY = p.y;
+    draw();
+  }
+
+  function endDrag() { dragging = false; }
+
+  canvas.addEventListener('mousedown', startDrag);
+  canvas.addEventListener('mousemove', moveDrag);
+  window.addEventListener('mouseup', endDrag);
+  canvas.addEventListener('touchstart', startDrag, { passive: true });
+  canvas.addEventListener('touchmove', moveDrag, { passive: true });
+  canvas.addEventListener('touchend', endDrag);
+
+  zoomInput.addEventListener('input', () => {
+    zoom = parseFloat(zoomInput.value);
+    draw();
+  });
+
+  photoInput.addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const img = new Image();
+    img.onload = () => {
+      photo = img;
+      zoom = 1;
+      zoomInput.value = 1;
+      offsetX = 0;
+      offsetY = 0;
+      draw();
+    };
+    img.src = URL.createObjectURL(file);
+  });
+
+  nameInput.addEventListener('input', draw);
+
+  downloadBtn.addEventListener('click', () => {
+    if (!photo) {
+      alert('Pilih foto dulu ya.');
+      return;
+    }
+    const link = document.createElement('a');
+    link.download = 'twibbon-hari-santri.png';
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+  });
+
+  draw();
+</script>
+</body>
+</html>
