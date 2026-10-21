@@ -99,7 +99,7 @@
 
     if (photo) {
       ctx.save();
-      roundRectPath(BOX.x, BOX.y, BOX.w, BOX.h, BOX.r);
+      archPath();(BOX.x, BOX.y, BOX.w, BOX.h, BOX.r);
       ctx.clip();
       const scale = Math.max(BOX.w / photo.width, BOX.h / photo.height);
       const dw = photo.width * scale;
@@ -120,12 +120,7 @@
         roundRectPath(plateX, plateY, plateW, plateH, 24);
         ctx.fill();
 
-        ctx.fillStyle = '#0e3b35';
-        ctx.font = 'bold 46px system-ui, sans-serif';
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillText(name, BOX.x + BOX.w / 2, plateY + plateH / 2, plateW - 40);
-      }
+        
     }
 
     if (frameReady) ctx.drawImage(frame, 0, 0, canvas.width, canvas.height);
